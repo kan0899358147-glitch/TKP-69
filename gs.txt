@@ -1,0 +1,172 @@
+/**
+ * ระบบส่งงาน TKP - Backend (Code.gs)
+ * อัปเดต: แก้ไขปัญหา Timezone วันที่คลาดเคลื่อน และเพิ่มอีเมลแจ้งเตือน
+ */
+
+const CONFIG = {
+  SHEET_ID: '1Z36Hh61yhveRwSx5-YYRFMswQdA-sXarJQiDmIV6cNA', 
+  FOLDER_ID: '10jlVsFH_Rn4LjOLdCFqfYDiMAWo-mhEo',
+  ADMIN_EMAIL: 'adobe.2510@gmail.com, chayanit@dei.ac.th',
+  SHEET_NAME: 'Data'
+};
+
+function doGet() {
+  return HtmlService.createTemplateFromFile('index')
+    .evaluate()
+    .setTitle('ส่งงาน TKP - สถาบันการศึกษาทางไกล')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// บันทึกข้อมูลใหม่
+function saveData(formData) {
+  try {
+    const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+    let sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+    if (!sheet) {
+      sheet = ss.insertSheet(CONFIG.SHEET_NAME);
+      sheet.appendRow(['วัน/เดือน/ปี', 'จังหวัด', 'URL เว็บไซต์', 'อัปโหลดเอกสาร', 'ผู้รับผิดชอบ']);
+    }
+
+    let fileUrls = uploadFiles_(formData.files);
+    const combinedUrls = fileUrls.join('\n');
+
+    sheet.appendRow([
+      formData.date, // บันทึกในรูปแบบสตริง YYYY-MM-DD จาก Input
+      formData.province,
+      formData.webUrl || '',
+      combinedUrls,
+      formData.responsible
+    ]);
+    
+    sendNotificationEmail(formData, combinedUrls);
+    return { success: true, message: `บันทึกข้อมูลสำเร็จ` };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  }
+}
+
+// แก้ไขข้อมูลเดิม (Update)
+function updateData(formData) {
+  try {
+    const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+    const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+    const rowIndex = parseInt(formData.rowId);
+
+    let combinedUrls = formData.existingFiles || '';
+    if (formData.files && formData.files.length > 0) {
+      let newUrls = uploadFiles_(formData.files);
+      combinedUrls = (combinedUrls ? combinedUrls + '\n' : '') + newUrls.join('\n');
+    }
+
+    sheet.getRange(rowIndex, 1, 1, 5).setValues([[
+      formData.date,
+      formData.province,
+      formData.webUrl || '',
+      combinedUrls,
+      formData.responsible
+    ]]);
+
+    return { success: true, message: "อัปเดตข้อมูลเรียบร้อยแล้ว" };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  }
+}
+
+// Helper: จัดการอัปโหลดไฟล์
+function uploadFiles_(files) {
+  let urls = [];
+  if (files && files.length > 0) {
+    const folder = DriveApp.getFolderById(CONFIG.FOLDER_ID);
+    files.forEach(fileObj => {
+      const contentType = fileObj.data.substring(5, fileObj.data.indexOf(';'));
+      const bytes = Utilities.base64Decode(fileObj.data.split(',')[1]);
+      const blob = Utilities.newBlob(bytes, contentType, fileObj.name);
+      urls.push(folder.createFile(blob).getUrl());
+    });
+  }
+  return urls;
+}
+
+function getDashboardData() {
+  try {
+    const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+    const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+    if (!sheet) return [];
+    const values = sheet.getDataRange().getValues();
+    if (values.length <= 1) return [];
+    values.shift(); 
+    
+    return values.map((row, index) => {
+      // แก้ไขส่วนนี้: ใช้ Utilities.formatDate เพื่อให้ตรงกับ Timezone ประเทศไทย (GMT+7)
+      let formattedDate = row[0];
+      if (row[0] instanceof Date) {
+        formattedDate = Utilities.formatDate(row[0], "GMT+7", "yyyy-MM-dd");
+      }
+      
+      return {
+        rowId: index + 2,
+        date: formattedDate,
+        province: row[1],
+        webUrl: row[2],
+        fileLink: row[3],
+        responsible: row[4]
+      };
+    });
+  } catch (e) { return []; }
+}
+
+function deleteRows(rowIndices) {
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  rowIndices.sort((a, b) => b - a).forEach(idx => sheet.deleteRow(idx));
+  return { success: true };
+}
+
+function generatePDF(rowIndex) {
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  const data = sheet.getRange(rowIndex, 1, 1, 5).getValues()[0];
+  
+  let displayDate = data[0];
+  if (data[0] instanceof Date) {
+    displayDate = Utilities.formatDate(data[0], "GMT+7", "dd/MM/yyyy");
+  }
+
+  const html = `
+    <div style="font-family:'K2D';">
+      <h1 style="color: #4B0082; text-align: center;">รายงานส่งงาน TKP</h1>
+      <hr>
+      <p><b>จังหวัด:</b> ${data[1]}</p>
+      <p><b>ผู้รับผิดชอบ:</b> ${data[4]}</p>
+      <p><b>วันที่:</b> ${displayDate}</p>
+      <p><b>เว็บไซต์:</b> ${data[2] || '-'}</p>
+    </div>
+  `;
+  return Utilities.base64Encode(HtmlService.createHtmlOutput(html).getAs('application/pdf').getBytes());
+}
+
+function sendNotificationEmail(data, fileLinks) {
+  const htmlBody = `
+    <div style="font-family: 'K2D', sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+      <h2 style="color: #4B0082;">🔔 แจ้งเตือนการส่งงานใหม่ (TKP)</h2>
+      <hr>
+      <p><b>📍 จังหวัด:</b> ${data.province}</p>
+      <p><b>👤 ผู้รับผิดชอบ:</b> ${data.responsible}</p>
+      <p><b>📅 วันที่ส่ง:</b> ${data.date}</p>
+      <p><b>🌐 เว็บไซต์:</b> ${data.webUrl || '-'}</p>
+      <br>
+      <p><b>ไฟล์แนบ:</b></p>
+      ${fileLinks ? fileLinks.split('\n').map(link => `<div style="margin-bottom:5px;"><a href="${link}" style="color: #4B0082;">🔗 คลิกดูไฟล์เอกสาร</a></div>`).join('') : 'ไม่มีไฟล์แนบ'}
+    </div>
+  `;
+  try { 
+    MailApp.sendEmail({ 
+      to: CONFIG.ADMIN_EMAIL, 
+      subject: `[TKP] ส่งงานใหม่: ${data.province} (${data.responsible})`, 
+      htmlBody: htmlBody 
+    }); 
+  } catch(e) {
+    console.error("Email error: " + e.message);
+  }
+}

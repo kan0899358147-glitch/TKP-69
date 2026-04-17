@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ส่งงาน TKP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=K2D:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body { font-family: 'K2D', sans-serif; background-color: #f3f4f6; overflow: hidden; }
+    .bg-dark-purple { background-color: #4B0082; }
+    .bg-light-purple { background-color: #E6E6FA; }
+    .gold-line {
+      height: 4px;
+      background: linear-gradient(90deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+    }
+    
+    /* Sidebar Styling */
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      height: calc(100vh - 100px); 
+      background-color: #4B0082;
+      color: white;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      color: white;
+    }
+    
+    .nav-btn-active {
+      background-color: #BF953F;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .nav-btn-inactive {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav-btn-inactive:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-btn-outline {
+      width: 100%;
+      text-align: left;
+      padding: 10px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-btn-outline:hover {
+      background-color: white;
+      color: #4B0082;
+    }
+
+    /* Content Area */
+    .main-content {
+      flex-grow: 1;
+      height: calc(100vh - 100px);
+      overflow-y: auto;
+      padding: 2rem;
+    }
+
+    .btn-action {
+      font-size: 10px;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      min-width: 45px;
+      text-align: center;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Header Section -->
+  <header class="bg-dark-purple text-white p-4 relative z-30 shadow-md">
+    <div class="container mx-auto flex items-center">
+      <img src="https://img2.pic.in.th/-eab80eaca06861ab.png" alt="Logo" class="w-[80px] h-auto mr-6">
+      <div class="flex-grow">
+        <h1 class="text-xl md:text-2xl font-bold">ส่งงาน TKP</h1>
+        <p class="text-md md:text-lg">สถาบันการศึกษาทางไกล</p>
+        <p class="text-xs opacity-80 font-light">กรมส่งเสริมการเรียนรู้</p>
+      </div>
+      <div id="currentDateTime" class="text-right text-xs hidden md:block opacity-90"></div>
+    </div>
+    <div class="gold-line absolute bottom-0 left-0 w-full"></div>
+  </header>
+
+  <div class="flex flex-grow overflow-hidden">
+    
+    <!-- Sidebar Menu (Left Side) -->
+    <aside class="sidebar z-20 shadow-xl">
+      <div class="mb-8">
+        <p class="text-gray-400 text-xs font-bold mb-4 uppercase tracking-widest px-2">เมนูการใช้งาน</p>
+        <button onclick="switchTab('form')" id="tab-form" class="nav-btn nav-btn-active">
+          <span class="mr-3 text-lg">📝</span> บันทึกข้อมูล
+        </button>
+        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-btn nav-btn-inactive">
+          <span class="mr-3 text-lg">📊</span> แดชบอร์ด
+        </button>
+      </div>
+
+      <div class="mt-auto">
+        <p class="text-gray-400 text-xs font-bold mb-4 uppercase tracking-widest px-2">แหล่งข้อมูลสำรอง</p>
+        <a href="https://docs.google.com/spreadsheets/d/1Z36Hh61yhveRwSx5-YYRFMswQdA-sXarJQiDmIV6cNA/edit?gid=0#gid=0" target="_blank" class="nav-btn-outline">
+          <span class="mr-3">🗄️</span> ฐานข้อมูลกลาง
+        </a>
+        <a href="https://docs.google.com/document/d/1RnMWyjkpvU4mqvnoQM7V78X-LAS5zD1Z/edit?usp=sharing&ouid=111439919531173361242&rtpof=true&sd=true" target="_blank" class="nav-btn-outline">
+          <span class="mr-3">📁</span> เทมเพลตเอกสาร
+        </a>
+        <a href="https://www.f0nt.com/release/th-sarabun-new/" target="_blank" class="nav-btn-outline">
+          <span class="mr-3">🔤</span> ฟอนต์ TH Sarabun
+        </a>
+        <a href="https://docs.google.com/document/d/1P_q3eB9Nfn0ccxGvpwX5IlBqYQwe-83_By_9YilzEso/edit?tab=t.0" target="_blank" class="nav-btn-outline">
+          <span class="mr-3">💡</span> ทริกเพิ่มเติม
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Workspace (Right Side) -->
+    <main class="main-content bg-gray-50 z-10">
+      
+      <!-- บันทึกข้อมูล -->
+      <section id="section-form" class="bg-light-purple p-8 rounded-2xl shadow-xl border border-purple-100 max-w-5xl">
+        <div class="flex justify-between items-center mb-8 border-b border-purple-300 pb-4">
+          <h2 id="formTitle" class="text-2xl font-bold text-dark-purple">บันทึกข้อมูลเอกสาร</h2>
+          <button id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-red-600 font-bold hover:text-red-800 transition-colors">
+            ✖ ยกเลิกการแก้ไข
+          </button>
+        </div>
+        
+        <form id="mainForm" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <input type="hidden" id="editRowId">
+          <input type="hidden" id="existingFiles">
+
+          <div class="space-y-2">
+            <label class="block font-bold text-gray-700">วัน/เดือน/ปี <span class="text-red-500">*</span></label>
+            <input type="date" id="date" required class="w-full p-3 border-2 border-white rounded-xl focus:border-purple-400 outline-none transition-all shadow-sm">
+          </div>
+          <div class="space-y-2">
+            <label class="block font-bold text-gray-700">จังหวัด <span class="text-red-500">*</span></label>
+            <select id="province" required class="w-full p-3 border-2 border-white rounded-xl focus:border-purple-400 outline-none transition-all shadow-sm" onchange="updateResponsible()">
+              <option value="">-- เลือกจังหวัด --</option>
+              <option>สถาบันการศึกษาทางไกล</option>
+              <option>กาญจนบุรี</option>
+              <option>นครราชสีมา</option>
+              <option>พระนครศรีอยุธยา</option>
+              <option>พังงา</option>
+              <option>พิษณุโลก</option>
+              <option>เพชรบูรณ์</option>
+              <option>ลำปาง</option>
+              <option>สงขลา</option>
+              <option>สุพรรณบุรี</option>
+              <option>อุดรธานี</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <label class="block font-bold text-gray-700">URL เว็บไซต์</label>
+            <input type="url" id="webUrl" placeholder="https://..." class="w-full p-3 border-2 border-white rounded-xl focus:border-purple-400 outline-none transition-all shadow-sm">
+          </div>
+          <div class="space-y-2">
+            <label class="block font-bold text-gray-700">อัปโหลดเอกสาร (เลือกเพิ่มได้)</label>
+            <input type="file" id="fileInput" multiple accept=".doc,.docx,.pdf,.jpg,.png,.jpeg" class="w-full p-2 border-2 border-white rounded-xl bg-white shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+          </div>
+          <div class="md:col-span-2 space-y-2">
+            <label class="block font-bold text-gray-700">ผู้รับผิดชอบ <span class="text-red-500">*</span></label>
+            <select id="responsible" required class="w-full p-3 border-2 border-white rounded-xl focus:border-purple-400 outline-none transition-all shadow-sm">
+              <option value="">-- โปรดเลือกจังหวัดก่อน --</option>
+            </select>
+          </div>
+          
+          <div class="md:col-span-2 flex justify-start pt-6">
+            <button type="button" onclick="handleSave()" id="btnSave" class="btn-side px-16 py-4 rounded-full text-xl font-bold shadow-2xl transform hover:scale-105 active:scale-95 transition-all">
+              บันทึกข้อมูล
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- แดชบอร์ด -->
+      <section id="section-dashboard" class="hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 flex flex-wrap gap-6 items-end justify-start">
+          <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-600">กรองตามจังหวัด</label>
+            <select id="filterProvince" onchange="renderTable()" class="p-3 border rounded-xl min-w-[240px] focus:ring-2 focus:ring-purple-200 outline-none transition-all">
+              <option value="">แสดงทั้งหมดทุกจังหวัด</option>
+              <option>สถาบันการศึกษาทางไกล</option>
+              <option>กาญจนบุรี</option>
+              <option>นครราชสีมา</option>
+              <option>พระนครศรีอยุธยา</option>
+              <option>พังงา</option>
+              <option>พิษณุโลก</option>
+              <option>เพชรบูรณ์</option>
+              <option>ลำปาง</option>
+              <option>สงขลา</option>
+              <option>สุพรรณบุรี</option>
+              <option>อุดรธานี</option>
+            </select>
+          </div>
+          <button onclick="loadDashboard()" class="bg-dark-purple text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-opacity-90 transition-all">ค้นหา</button>
+          <button onclick="clearSearch()" class="bg-gray-100 text-gray-600 px-8 py-3 rounded-xl font-bold hover:bg-gray-200 transition-all">ล้างค่า</button>
+          <div id="searchCount" class="ml-auto font-bold text-dark-purple px-4 text-lg"></div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden min-h-[400px]">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-dark-purple text-white">
+              <tr>
+                <th class="p-4 border-b w-12"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()" class="w-4 h-4 rounded"></th>
+                <th class="p-4 border-b">วัน/เดือน/ปี</th>
+                <th class="p-4 border-b">จังหวัด</th>
+                <th class="p-4 border-b">ผู้รับผิดชอบ</th>
+                <th class="p-4 border-b">ลิงก์</th>
+                <th class="p-4 border-b text-center">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="dataTableBody" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+        
+        <div id="multiDeleteBar" class="hidden bg-red-50 p-5 border border-red-200 rounded-2xl flex justify-between items-center animate-pulse">
+          <span id="selectedCount" class="text-red-700 font-bold text-lg">เลือก 0 รายการ</span>
+          <button onclick="askPasswordAndProcess('deleteMulti')" class="bg-red-600 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:bg-red-700 transition-all">ลบรายการที่เลือก</button>
+        </div>
+        <div id="pagination" class="flex justify-start gap-2 pt-4 pb-12"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark-purple text-white p-4 text-center text-sm relative z-30">
+    <div class="flex flex-col md:flex-row justify-center items-center gap-2">
+      <p>พัฒนาโดย : 💻กลุ่มงานจัดการศึกษาตามคุณวุฒิ หลักสูตรภาษาอังกฤษ</p>
+      <span class="hidden md:inline">|</span>
+      <p>©️ลิขสิทธิ์ 🏠สถาบันการศึกษาทางไกล</p>
+    </div>
+  </footer>
+
+  <script>
+    if (typeof google === 'undefined') {
+      window.google = { script: { run: { 
+        withSuccessHandler: function(cb) { this.h = cb; return this; }, 
+        withFailureHandler: function() { return this; },
+        getDashboardData: function() { if(this.h) this.h([]); },
+        saveData: function() { Swal.fire('Preview Mode', 'บันทึกสำเร็จ (โหมดจำลอง)', 'info'); },
+        updateData: function() { Swal.fire('Preview Mode', 'อัปเดตสำเร็จ (โหมดจำลอง)', 'info'); },
+        deleteRows: function() { if(this.h) this.h(); },
+        generatePDF: function() { if(this.h) this.h(""); }
+      }}};
+    }
+
+    const RESPONSIBLE_MAP = {
+      'สถาบันการศึกษาทางไกล': ['เจ้าหน้าที่สถาบันการศึกษาทางไกล'],
+      'กาญจนบุรี': ['นายโกวิท เมืองโคตร', 'นางสาววารุณี มะณีสอน'],
+      'นครราชสีมา': ['นายวันชัย พฤกษาชีพ'],
+      'พระนครศรีอยุธยา': ['นางสาวศิริกัญญา อิทธิพิบูล'],
+      'พังงา': ['นายชาญชัย จันทร์ทอง'],
+      'พิษณุโลก': ['นายจตุพล กำหนด'],
+      'เพชรบูรณ์': ['นางสาวศิริวิมล มูลคำภา'],
+      // แก้ไขจาก นาย เป็น นางสาว
+      'ลำปาง': ['นางสาวกรัณฑรัตน์ ดวงใจสืบ'],
+      'สงขลา': ['นางสาวยุพาวดี ชูศิริ'],
+      'สุพรรณบุรี': ['นางสาวปิยะนุช ศรนุวัตร'],
+      'อุดรธานี': ['นายจีระศักดิ์ ผาเชาว์']
+    };
+
+    let dashboardData = [];
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let isEditMode = false;
+
+    window.onload = () => {
+      updateClock();
+      setInterval(updateClock, 1000);
+      loadDashboard();
+    };
+
+    function updateClock() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      document.getElementById('currentDateTime').innerText = now.toLocaleDateString('th-TH', options);
+    }
+
+    function updateResponsible(selectedVal = null) {
+      const province = document.getElementById('province').value;
+      const select = document.getElementById('responsible');
+      select.innerHTML = '<option value="">-- เลือกผู้รับผิดชอบ --</option>';
+      if (RESPONSIBLE_MAP[province]) {
+        RESPONSIBLE_MAP[province].forEach(name => {
+          let opt = document.createElement('option');
+          opt.value = name; opt.text = name; select.add(opt);
+        });
+        if (selectedVal) select.value = selectedVal;
+      }
+    }
+
+    function switchTab(tab) {
+      if (isEditMode && tab === 'dashboard') {
+        Swal.fire({
+          title: 'กำลังแก้ไขข้อมูล', text: 'ต้องการยกเลิกการแก้ไขและสลับหน้าหรือไม่?', icon: 'warning',
+          showCancelButton: true, confirmButtonText: 'ยกเลิกการแก้ไข', cancelButtonText: 'ทำต่อ'
+        }).then((r) => { if(r.isConfirmed) cancelEdit(); });
+        return;
+      }
+      document.getElementById('section-form').classList.toggle('hidden', tab !== 'form');
+      document.getElementById('section-dashboard').classList.toggle('hidden', tab !== 'dashboard');
+      document.getElementById('tab-form').className = tab === 'form' ? 'nav-btn nav-btn-active' : 'nav-btn nav-btn-inactive';
+      document.getElementById('tab-dashboard').className = tab === 'dashboard' ? 'nav-btn nav-btn-active' : 'nav-btn nav-btn-inactive';
+      if (tab === 'dashboard') loadDashboard();
+    }
+
+    async function handleSave() {
+      const form = document.getElementById('mainForm');
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      const fileInput = document.getElementById('fileInput');
+      const files = fileInput.files;
+      const fileDataArray = [];
+      Swal.fire({ title: 'กำลังประมวลผลไฟล์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      for (let i = 0; i < files.length; i++) {
+        const data = await new Promise((res) => {
+          const r = new FileReader();
+          r.onload = () => res(r.result);
+          r.readAsDataURL(files[i]);
+        });
+        fileDataArray.push({ name: files[i].name, data: data });
+      }
+      const payload = {
+        rowId: document.getElementById('editRowId').value,
+        date: document.getElementById('date').value,
+        province: document.getElementById('province').value,
+        webUrl: document.getElementById('webUrl').value,
+        responsible: document.getElementById('responsible').value,
+        existingFiles: document.getElementById('existingFiles').value,
+        files: fileDataArray
+      };
+      const functionName = isEditMode ? 'updateData' : 'saveData';
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.success) {
+            Swal.fire('เรียบร้อย!', res.message, 'success');
+            if(isEditMode) cancelEdit(); else { form.reset(); updateResponsible(); }
+          } else if (res) {
+            Swal.fire('ไม่สำเร็จ', res.message, 'error');
+          }
+        })
+        .withFailureHandler(err => {
+          Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับ Google Script ได้', 'error');
+        })
+        [functionName](payload);
+    }
+
+    function loadDashboard() {
+      google.script.run
+        .withSuccessHandler(data => {
+          dashboardData = data || [];
+          renderTable();
+        })
+        .getDashboardData();
+    }
+
+    function renderTable() {
+      const filter = document.getElementById('filterProvince').value;
+      let filtered = dashboardData.filter(d => !filter || d.province === filter);
+      filtered.sort((a, b) => (a.province || "").localeCompare(b.province || "", 'th'));
+      document.getElementById('searchCount').innerText = `พบ ${filtered.length} รายการ`;
+      const start = (currentPage - 1) * rowsPerPage;
+      const paginated = filtered.slice(start, start + rowsPerPage);
+      const tbody = document.getElementById('dataTableBody');
+      tbody.innerHTML = '';
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-gray-400">ยังไม่มีข้อมูลในฐานข้อมูล</td></tr>';
+      }
+      paginated.forEach(row => {
+        let fDate = "-";
+        if (row.date) {
+          const d = new Date(row.date);
+          if (!isNaN(d)) {
+            const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            fDate = `${d.getDate()} ${months[d.getMonth()]} ${(d.getFullYear() + 543).toString().slice(-2)}`;
+          }
+        }
+        const links = row.fileLink ? row.fileLink.toString().split('\n') : [];
+        tbody.innerHTML += `
+          <tr class="hover:bg-purple-50 transition-colors border-b border-gray-100">
+            <td class="p-4"><input type="checkbox" class="row-check w-4 h-4 rounded" value="${row.rowId}" onclick="updateSelectedUI()"></td>
+            <td class="p-4 text-sm font-medium text-gray-700">${fDate}</td>
+            <td class="p-4 font-bold text-sm text-dark-purple">${row.province || '-'}</td>
+            <td class="p-4 text-sm text-gray-600">${row.responsible || '-'}</td>
+            <td class="p-4">
+              <div class="flex flex-col gap-1">
+                ${row.webUrl ? `<a href="${row.webUrl}" target="_blank" class="text-blue-600 underline text-[10px] font-bold">🌐 เข้าสู่เว็บไซต์</a>` : ''}
+                ${links.map((l, i) => l ? `<a href="${l}" target="_blank" class="text-purple-600 underline text-[10px] font-bold">📄 เอกสารแนบที่ ${i+1}</a>` : '').join('')}
+              </div>
+            </td>
+            <td class="p-4">
+              <div class="flex justify-center gap-1">
+                <button onclick="exportPdf(${row.rowId})" class="btn-action bg-green-500 hover:bg-green-600 shadow-sm">PDF</button>
+                <button onclick="editItem(${row.rowId})" class="btn-action bg-blue-500 hover:bg-blue-600 shadow-sm">แก้ไข</button>
+                <button onclick="askPasswordAndProcess('deleteSingle', ${row.rowId})" class="btn-action bg-red-500 hover:bg-red-600 shadow-sm">ลบ</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      renderPagination(filtered.length);
+      updateSelectedUI();
+    }
+
+    function editItem(id) {
+      const data = dashboardData.find(d => d.rowId === id);
+      if (!data) return;
+      isEditMode = true;
+      document.getElementById('editRowId').value = data.rowId;
+      document.getElementById('date').value = data.date;
+      document.getElementById('province').value = data.province;
+      updateResponsible(data.responsible);
+      document.getElementById('webUrl').value = data.webUrl;
+      document.getElementById('existingFiles').value = data.fileLink;
+      document.getElementById('formTitle').innerText = "📍 แก้ไขข้อมูลเอกสาร";
+      document.getElementById('btnSave').innerText = "อัปเดตข้อมูล";
+      document.getElementById('btnCancelEdit').classList.remove('hidden');
+      switchTab('form');
+    }
+
+    function cancelEdit() {
+      isEditMode = false;
+      document.getElementById('mainForm').reset();
+      document.getElementById('editRowId').value = "";
+      document.getElementById('existingFiles').value = "";
+      document.getElementById('formTitle').innerText = "บันทึกข้อมูลเอกสาร";
+      document.getElementById('btnSave').innerText = "บันทึกข้อมูล";
+      document.getElementById('btnCancelEdit').classList.add('hidden');
+      updateResponsible();
+      switchTab('form');
+    }
+
+    function askPasswordAndProcess(action, id = null) {
+      Swal.fire({
+        title: 'ยืนยันรหัสผ่านผู้ดูแลระบบ', input: 'password', showCancelButton: true,
+        confirmButtonText: 'ตรวจสอบ', confirmButtonColor: '#4B0082'
+      }).then((r) => {
+        if (r.value === 'admin123') {
+          if (action === 'deleteSingle') deleteItems([id]);
+          if (action === 'deleteMulti') deleteItems(Array.from(document.querySelectorAll('.row-check:checked')).map(c => parseInt(c.value)));
+        } else if (r.isConfirmed) { Swal.fire('ผิดพลาด', 'รหัสผ่านไม่ถูกต้อง', 'error'); }
+      });
+    }
+
+    function deleteItems(ids) {
+      Swal.fire({ title: 'กำลังดำเนินการลบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      google.script.run.withSuccessHandler(() => {
+        Swal.fire('สำเร็จ!', 'ข้อมูลถูกลบเรียบร้อย', 'success');
+        loadDashboard();
+      }).deleteRows(ids);
+    }
+
+    function renderPagination(total) {
+      const totalPages = Math.ceil(total / rowsPerPage);
+      const container = document.getElementById('pagination');
+      container.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        container.innerHTML += `<button onclick="goToPage(${i})" class="px-4 py-2 border rounded-xl font-bold transition-all ${i === currentPage ? 'bg-dark-purple text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-100'}">${i}</button>`;
+      }
+    }
+    function goToPage(p) { currentPage = p; renderTable(); }
+    function clearSearch() { document.getElementById('filterProvince').value = ''; currentPage = 1; renderTable(); }
+    function toggleSelectAll() {
+      const isChecked = document.getElementById('selectAll').checked;
+      document.querySelectorAll('.row-check').forEach(c => c.checked = isChecked);
+      updateSelectedUI();
+    }
+    function updateSelectedUI() {
+      const checked = document.querySelectorAll('.row-check:checked');
+      document.getElementById('selectedCount').innerText = `เลือก ${checked.length} รายการ`;
+      document.getElementById('multiDeleteBar').classList.toggle('hidden', checked.length === 0);
+    }
+    function exportPdf(id) {
+       Swal.fire({ title: 'กำลังสร้าง PDF...', didOpen: () => Swal.showLoading() });
+       google.script.run.withSuccessHandler(base64 => {
+         if (!base64) return;
+         const bin = atob(base64);
+         const u8a = new Uint8Array(bin.length);
+         for (let i = 0; i < bin.length; i++) u8a[i] = bin.charCodeAt(i);
+         window.open(URL.createObjectURL(new Blob([u8a], { type: 'application/pdf' })));
+         Swal.close();
+       }).generatePDF(id);
+    }
+  </script>
+</body>
+</html>
